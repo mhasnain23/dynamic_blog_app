@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 const Navbar = () => {
+  const router = useRouter();
   return (
     <div className="max-w-7xl mx-auto">
       <div className="navbar md:px-0 px-5 bg-base-100 rounded-md">
@@ -19,8 +23,11 @@ const Navbar = () => {
               <Link href={"/blog"}>Blog</Link>
             </li>
             <li>
-              <button className="btn btn-outline p-4">
-                <Link href={"/post"}>Post a Blog</Link>
+              <button
+                className="btn btn-outline p-4"
+                onClick={() => router.push("/post")}
+              >
+                Post a Blog
               </button>
             </li>
           </ul>

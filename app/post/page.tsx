@@ -1,3 +1,4 @@
+import BlogListing from "@/components/BlogListing";
 import PostNewBlog from "@/components/PostBlog";
 
 function PostPage() {
@@ -9,7 +10,9 @@ function PostPage() {
           <PostNewBlog />
         </div>
         {/* right container */}
-        <div></div>
+        <div className="lg:w-[450px]">
+          <BlogListing />
+        </div>
       </div>
     </section>
   );

@@ -1,30 +1,68 @@
+"use client";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { posts } from "../../data";
 import CommentSection from "@/components/CommentSection";
+import { useParams } from "next/navigation";
 
-export default async function BlogPosts({ params }: { params: any }) {
-  const { id } = await params;
+interface BlogPost {
+  id: number;
+  title: string;
+  description: string;
+  uploadImage: string;
+  createdAt: string;
+}
 
-  const post = posts.find((p) => p.id === id);
+export default function BlogPosts() {
+  const params = useParams();
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!post) return <div>Post not found</div>;
+  useEffect(() => {
+    try {
+      const savedPosts = localStorage.getItem("blogFormData");
+      if (savedPosts) {
+        const parsedPosts = JSON.parse(savedPosts);
+        const foundPost = parsedPosts.find(
+          (p: BlogPost) => p.id === Number(params.id)
+        );
+        setPost(foundPost || null);
+      }
+    } catch (error) {
+      console.error("Error loading post:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="text-center text-2xl font-bold py-16">Loading...</div>
+    );
+  }
+
+  if (!post) {
+    return <div className="text-center py-16">Post not found</div>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
-      <div className="relative h-[400px] mb-8">
+      <div className="aspect-video relative w-full mb-8">
         <Image
-          src={post.image}
+          src={post.uploadImage}
           alt={post.title}
           fill
+          priority
+          quality={100}
           className="object-cover rounded-lg"
         />
       </div>
-
-      <h1 className="text-4xl font-bold text-white mb-4">{post.title}</h1>
-      <p className="text-gray-400 mb-8">{post.date}</p>
-      <div className="prose prose-invert max-w-none mb-16">{post.content}</div>
-
-      {/* Comments Section */}
+      <h1 className="text-4xl font-bold mb-4 text-white">{post.title}</h1>
+      <p className="text-gray-400 mb-2">
+        {new Date(post.createdAt).toLocaleDateString()}
+      </p>
+      <div className="prose prose-invert max-w-none">
+        <p className="text-gray-300 mb-3 text-lg">{post.description}</p>
+      </div>
       <CommentSection />
     </div>
   );

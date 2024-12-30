@@ -1,56 +1,53 @@
 "use client";
 
-import { ListCollapse, Loader2Icon } from "lucide-react";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { Loader2Icon } from "lucide-react";
+import { FormEvent, useState } from "react";
 
 interface BlogPostT {
   title: string;
   description: string;
   uploadImage: string;
 }
-// Helper functions at the top
+
 const saveToLocalStorage = (formData: BlogPostT) => {
   try {
-    localStorage.setItem("blogFormData", JSON.stringify(formData));
+    // Get existing posts with correct key
+    const existingPosts = localStorage.getItem("blogFormData");
+    let posts = [];
+
+    try {
+      posts = existingPosts ? JSON.parse(existingPosts) : [];
+      // console.log("Existing posts:", posts); // Debug log
+      if (!Array.isArray(posts)) posts = [];
+    } catch {
+      posts = [];
+    }
+
+    // Add new post with unique ID
+    const newPost = {
+      id: Date.now(),
+      ...formData,
+      createdAt: new Date().toISOString(),
+    };
+    // console.log("New post to add:", newPost); // Debug log
+
+    // Save updated posts array with correct key
+    const updatedPosts = [...posts, newPost];
+    // console.log("Updated posts array:", updatedPosts); // Debug log
+    localStorage.setItem("blogFormData", JSON.stringify(updatedPosts));
   } catch (error) {
     console.error("Error saving to localStorage:", error);
     throw new Error("Failed to save data");
   }
 };
 
-const loadFromLocalStorage = (): BlogPostT => {
-  try {
-    const saved = localStorage.getItem("blogFormData");
-    return saved
-      ? JSON.parse(saved)
-      : {
-          title: "",
-          description: "",
-          uploadImage: "",
-        };
-  } catch (error) {
-    console.error("Error loading from localStorage:", error);
-    return {
-      title: "",
-      description: "",
-      uploadImage: "",
-    };
-  }
-};
-
 const PostNewBlog = () => {
-  const [blogFormData, setBlogFormData] = useState<BlogPostT>({
+  const [blogFormData, setBlogFormData] = useState({
     title: "",
     description: "",
     uploadImage: "",
   });
   const [loading, setLoading] = useState(false);
-
-  // Load saved data on mount
-  useEffect(() => {
-    const savedData = loadFromLocalStorage();
-    setBlogFormData(savedData);
-  }, []);
 
   const handleBtnDisabled = () => {
     return (
@@ -74,7 +71,6 @@ const PostNewBlog = () => {
       }
 
       saveToLocalStorage(blogFormData);
-
       // Reset form after successful save
       setBlogFormData({
         title: "",
@@ -83,6 +79,7 @@ const PostNewBlog = () => {
       });
 
       alert("Blog post saved successfully!");
+      window.location.reload();
     } catch (error) {
       console.error("Error submitting form:", error);
       alert(
@@ -109,7 +106,7 @@ const PostNewBlog = () => {
             [e.target.name]: e.target.value,
           })
         }
-        className="w-full px-8 py-2 rounded-lg bg-gray-300 text-black/80 font-bold placeholder:text-black/50 placeholder:text-sm placeholder:font-semibold outline-none"
+        className="w-full px-8 py-2 rounded-lg bg-gray-100 text-black/80 font-bold placeholder:text-black/50 placeholder:text-sm placeholder:font-semibold outline-none"
       />
       <textarea
         placeholder="Blog description"
@@ -118,17 +115,17 @@ const PostNewBlog = () => {
         onChange={(e) =>
           setBlogFormData({ ...blogFormData, [e.target.name]: e.target.value })
         }
-        className="w-full px-8 py-2 rounded-lg bg-gray-300 text-black/80 font-bold placeholder:text-black/50 placeholder:text-sm placeholder:font-semibold outline-none"
+        className="w-full px-8 py-2 rounded-lg bg-gray-100 text-black/80 font-bold placeholder:text-black/50 placeholder:text-sm placeholder:font-semibold outline-none"
       />
       <input
         type="text"
-        placeholder="blog image link"
+        placeholder="Blog image URL"
         value={blogFormData.uploadImage}
         name="uploadImage"
         onChange={(e) =>
           setBlogFormData({ ...blogFormData, [e.target.name]: e.target.value })
         }
-        className="w-full px-8 py-2 rounded-lg bg-gray-300 text-black/80 font-bold placeholder:text-black/50 placeholder:text-sm placeholder:font-semibold outline-none"
+        className="w-full px-8 py-2 rounded-lg bg-gray-100 text-black/80 font-bold placeholder:text-black/50 placeholder:text-sm placeholder:font-semibold outline-none"
       />
       <button
         type="submit"

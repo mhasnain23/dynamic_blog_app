@@ -1,6 +1,7 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
-import { posts } from "../data/index";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -8,7 +9,36 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 
+interface BlogPost {
+  id: number;
+  title: string;
+  description: string;
+  uploadImage: string;
+  createdAt: string;
+}
+
 export default function BlogPage() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    try {
+      const savedPosts = localStorage.getItem("blogFormData");
+      if (savedPosts) {
+        const parsedPosts = JSON.parse(savedPosts);
+        setPosts(Array.isArray(parsedPosts) ? parsedPosts : []);
+      }
+    } catch (error) {
+      console.error("Error loading posts:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  if (loading) {
+    return <div className="text-center py-16">Loading...</div>;
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-16">
       <h1 className="text-4xl font-bold mb-8 text-white">Blog Posts</h1>
@@ -19,7 +49,7 @@ export default function BlogPage() {
               <CardHeader className="p-0">
                 <div className="aspect-video relative overflow-hidden">
                   <Image
-                    src={post.image}
+                    src={post.uploadImage}
                     alt={post.title}
                     fill
                     priority
@@ -29,12 +59,16 @@ export default function BlogPage() {
                 </div>
               </CardHeader>
               <CardContent className="p-4">
-                <h2 className="text-xl font-bold text-white line-clamp-2">
-                  {post.title}
-                </h2>
+                <h2 className="text-xl font-bold text-white">{post.title}</h2>
+                <p className="text-white/80 mt-2">
+                  {post.description.split(" ").slice(0, 40).join(" ")}..
+                </p>
               </CardContent>
-              <CardFooter className="p-4 pt-0">
-                <p className="text-gray-400">{post.date}</p>
+              <CardFooter className="flex items-center justify-between px-3">
+                <p className="btn px-4 btn-primary">Read More</p>
+                <p className="text-md text-gray-400">
+                  {new Date(post.createdAt).toLocaleDateString()}
+                </p>
               </CardFooter>
             </Card>
           </Link>
